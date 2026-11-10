@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: databridge
+      POSTGRES_USER: databridge
+      POSTGRES_PASSWORD: ${DATABRIDGE_DB_PASSWORD:-databridge_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../databridge-client-portal/migrations/001_init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U databridge -d databridge"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  s3mock:
+    image: adobe/s3mock:latest
+    ports:
+      - "9090:9090"
+  storage-init:
+    build:
+      context: ../databridge-client-portal
+    command: ["python", "scripts/init_storage.py"]
+    depends_on:
+      s3mock:
+        condition: service_started
+    environment:
+      S3_ENDPOINT: http://s3mock:9090
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${DATABRIDGE_S3_ACCESS_KEY:-test}
+      S3_SECRET_KEY: ${DATABRIDGE_S3_SECRET_KEY:-test}
+      UPLOAD_BUCKET: databridge-uploads
+      DELIVERABLE_BUCKET: databridge-deliverables
+
+  contributor-service:
+    build:
+      context: ../databridge-client-portal
+    environment:
+      PORT: 8081
+      DATABASE_URL: postgresql+psycopg://databridge:${DATABRIDGE_DB_PASSWORD:-databridge_dev}@postgres:5432/databridge
+      JWT_SECRET: ${DATABRIDGE_JWT_SECRET:-development-only-secret-change-me}
+      CORS_ORIGIN: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+      S3_ENDPOINT: http://s3mock:9090
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${DATABRIDGE_S3_ACCESS_KEY:-test}
+      S3_SECRET_KEY: ${DATABRIDGE_S3_SECRET_KEY:-test}
+      UPLOAD_BUCKET: databridge-uploads
+      DELIVERABLE_BUCKET: databridge-deliverables
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+
+  analytics-service:
+    build:
+      context: ../databridge-analytics-portal
+    environment:
+      PORT: 8082
+      DATABASE_URL: postgresql+psycopg://databridge:${DATABRIDGE_DB_PASSWORD:-databridge_dev}@postgres:5432/databridge
+      JWT_SECRET: ${DATABRIDGE_JWT_SECRET:-development-only-secret-change-me}
+      CORS_ORIGIN: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../databridge-frontend
+      target: build
+    command: npm run dev
+    ports:
+      - "5173:5173"
+      - "5174:5174"
+    environment:
+      VITE_API_TARGET: http://contributor-service:8081
+      VITE_ANALYTICS_API_TARGET: http://analytics-service:8082
+    depends_on:
+      - contributor-service
+      - analytics-service
+
+volumes:
+  postgres_data:

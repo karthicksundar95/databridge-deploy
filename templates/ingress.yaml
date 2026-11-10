@@ -1,0 +1,83 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "databridge.fullname" . }}-contributor-api
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-contributor-service, port: { number: 8081 } }
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-contributor-service, port: { number: 8081 } }
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-contributor-service, port: { number: 8081 } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "databridge.fullname" . }}-contributor-portal
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-client, port: { number: 80 } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "databridge.fullname" . }}-analytics-api
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.analyticsHost }}
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-analytics-service, port: { number: 8082 } }
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-analytics-service, port: { number: 8082 } }
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-analytics-service, port: { number: 8082 } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "databridge.fullname" . }}-analytics-portal
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.analyticsHost }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: {{ include "databridge.fullname" . }}-analytics, port: { number: 80 } }
+{{- end }}

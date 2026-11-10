@@ -1,0 +1,38 @@
+global:
+  environment: dev
+contributorService:
+  replicaCount: 2
+  image: { repository: databridge/contributor-service, tag: latest, pullPolicy: IfNotPresent }
+  service: { port: 8081 }
+  jwtSecretExistingSecret: databridge-services
+analyticsService:
+  replicaCount: 2
+  image: { repository: databridge/analytics-service, tag: latest, pullPolicy: IfNotPresent }
+  service: { port: 8082 }
+  jwtSecretExistingSecret: databridge-services
+clientPortal:
+  replicaCount: 2
+  image: { repository: databridge/client-portal, tag: latest, pullPolicy: IfNotPresent }
+  service: { port: 80 }
+analyticsPortal:
+  replicaCount: 2
+  image: { repository: databridge/analytics-portal, tag: latest, pullPolicy: IfNotPresent }
+  service: { port: 80 }
+postgres:
+  host: ""
+  port: 5432
+  database: databridge
+  existingSecret: databridge-postgres
+  userKey: username
+  passwordKey: password
+storage:
+  bucket: databridge-uploads
+  deliverableBucket: databridge-deliverables
+  region: us-east-1
+  serviceAccountRoleArn: ""
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: databridge.local
+  analyticsHost: analytics.databridge.local

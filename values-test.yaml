@@ -1,0 +1,21 @@
+global: { environment: test }
+contributorService:
+  replicaCount: 2
+  image: { repository: databridge/contributor-service, tag: test, pullPolicy: IfNotPresent }
+analyticsService:
+  replicaCount: 2
+  image: { repository: databridge/analytics-service, tag: test, pullPolicy: IfNotPresent }
+clientPortal:
+  replicaCount: 2
+  image: { repository: databridge/client-portal, tag: test, pullPolicy: IfNotPresent }
+analyticsPortal:
+  replicaCount: 2
+  image: { repository: databridge/analytics-portal, tag: test, pullPolicy: IfNotPresent }
+postgres:
+  host: postgres.databridge-test.svc.cluster.local
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  host: test.databridge.example.com
+  analyticsHost: analytics-test.databridge.example.com

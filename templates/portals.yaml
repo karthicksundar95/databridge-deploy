@@ -1,0 +1,30 @@
+{{- range $name, $config := dict "client" .Values.clientPortal "analytics" .Values.analyticsPortal }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "databridge.fullname" $ }}-{{ $name }}
+spec:
+  replicas: {{ $config.replicaCount }}
+  selector:
+    matchLabels: { app: databridge-{{ $name }} }
+  template:
+    metadata:
+      labels: { app: databridge-{{ $name }} }
+    spec:
+      containers:
+        - name: portal
+          image: "{{ $config.image.repository }}:{{ $config.image.tag }}"
+          imagePullPolicy: {{ $config.image.pullPolicy }}
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "databridge.fullname" $ }}-{{ $name }}
+spec:
+  selector: { app: databridge-{{ $name }} }
+  ports:
+    - port: {{ $config.service.port }}
+      targetPort: 80
+{{- end }}
