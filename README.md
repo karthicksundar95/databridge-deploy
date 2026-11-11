@@ -1,6 +1,6 @@
 # DataBridge deploy
 
-Local Docker Compose stack and Helm deployment for the DataBridge frontend, client portal service, analytics service, PostgreSQL, and persistent MinIO object storage. The local frontend is presented through one Nginx gateway so clients and analysts use the same public origin.
+Local Docker Compose stack and Helm deployment for the DataBridge frontend, client portal service, analytics service, PostgreSQL, and persistent SeaweedFS S3-compatible object storage. The local frontend is presented through one Nginx gateway so clients and analysts use the same public origin.
 
 ## Run the full application locally
 
@@ -18,7 +18,7 @@ docker compose up --build
 
 The gateway owns port 5173. The client and analytics Vite servers are internal Compose services; do not use their implementation ports as user-facing URLs.
 
-Compose mounts the client portal service migration into PostgreSQL initialization for a fresh local database. PostgreSQL and local object data persist in named Docker volumes. MinIO is a local development substitute for AWS S3; production should use private AWS S3.
+Compose mounts the client portal service migration into PostgreSQL initialization for a fresh local database. PostgreSQL and local object data persist in named Docker volumes. SeaweedFS is a local development substitute for AWS S3; production should use private AWS S3.
 
 Client users can register at the client portal's `/signup` page. No demo accounts are created. To provision a local analyst or administrator, run this from the deployment directory after Compose is up; the command prompts for a password without placing it in shell history:
 
