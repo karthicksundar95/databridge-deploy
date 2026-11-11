@@ -1,8 +1,8 @@
 global:
   environment: dev
-contributorService:
+clientPortalService:
   replicaCount: 2
-  image: { repository: databridge/contributor-service, tag: latest, pullPolicy: IfNotPresent }
+  image: { repository: databridge/client-portal-service, tag: latest, pullPolicy: IfNotPresent }
   service: { port: 8081 }
   jwtSecretExistingSecret: databridge-services
 analyticsService:

@@ -1,7 +1,7 @@
 global: { environment: dev }
-contributorService:
+clientPortalService:
   replicaCount: 1
-  image: { repository: databridge/contributor-service, tag: dev, pullPolicy: IfNotPresent }
+  image: { repository: databridge/client-portal-service, tag: dev, pullPolicy: IfNotPresent }
 analyticsService:
   replicaCount: 1
   image: { repository: databridge/analytics-service, tag: dev, pullPolicy: IfNotPresent }

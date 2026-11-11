@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: databridge-contributor-service
+  name: databridge-client-portal-service
   {{- with .Values.storage.serviceAccountRoleArn }}
   annotations:
     eks.amazonaws.com/role-arn: {{ . | quote }}
   {{- end }}
 ---
-{{- $services := dict "contributor" .Values.contributorService "analytics" .Values.analyticsService }}
+{{- $services := dict "client-portal" .Values.clientPortalService "analytics" .Values.analyticsService }}
 {{- range $name, $config := $services }}
-{{- $port := ternary 8081 8082 (eq $name "contributor") }}
+{{- $port := ternary 8081 8082 (eq $name "client-portal") }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,8 +23,8 @@ spec:
     metadata:
       labels: { app: databridge-{{ $name }}-service }
     spec:
-      {{- if eq $name "contributor" }}
-      serviceAccountName: databridge-contributor-service
+      {{- if eq $name "client-portal" }}
+      serviceAccountName: databridge-client-portal-service
       {{- end }}
       containers:
         - name: service
@@ -42,7 +42,9 @@ spec:
               valueFrom: { secretKeyRef: { name: {{ $config.jwtSecretExistingSecret }}, key: jwt-secret } }
             - name: PORT
               value: {{ $port | quote }}
-            {{- if eq $name "contributor" }}
+            - name: ENVIRONMENT
+              value: {{ $.Values.global.environment | quote }}
+            {{- if eq $name "client-portal" }}
             - name: UPLOAD_BUCKET
               value: {{ $.Values.storage.bucket | quote }}
             - name: DELIVERABLE_BUCKET
