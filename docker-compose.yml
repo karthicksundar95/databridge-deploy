@@ -13,6 +13,7 @@ services:
       - ../databridge-client-portal/migrations/002_signup_otp.sql:/docker-entrypoint-initdb.d/002-signup-otp.sql:ro
       - ../databridge-client-portal/migrations/003_admin_user_lifecycle.sql:/docker-entrypoint-initdb.d/003-admin-user-lifecycle.sql:ro
       - ../databridge-client-portal/migrations/004_admin_password_controls.sql:/docker-entrypoint-initdb.d/004-admin-password-controls.sql:ro
+      - ../databridge-client-portal/migrations/005_mfa.sql:/docker-entrypoint-initdb.d/005-mfa.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U databridge -d databridge"]
       interval: 5s
@@ -55,6 +56,7 @@ services:
       PORT: 8081
       DATABASE_URL: postgresql+psycopg://databridge:${DATABRIDGE_DB_PASSWORD:-databridge_dev}@postgres:5432/databridge
       JWT_SECRET: ${DATABRIDGE_JWT_SECRET:-development-only-secret-change-me}
+      MFA_ENCRYPTION_KEY: ${DATABRIDGE_MFA_ENCRYPTION_KEY:-jK8d3QmW7xP2vN5rT9yL4cF6hG1sA0bZ2eD8uI3oP7Q=}
       ENVIRONMENT: development
       CORS_ORIGIN: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
       S3_ENDPOINT: http://s3mock:8333

@@ -40,6 +40,10 @@ spec:
               value: "postgresql+psycopg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@{{ $.Values.postgres.host }}:{{ $.Values.postgres.port }}/{{ $.Values.postgres.database }}"
             - name: JWT_SECRET
               valueFrom: { secretKeyRef: { name: {{ $config.jwtSecretExistingSecret }}, key: jwt-secret } }
+            {{- if eq $name "client-portal" }}
+            - name: MFA_ENCRYPTION_KEY
+              valueFrom: { secretKeyRef: { name: {{ $config.jwtSecretExistingSecret }}, key: mfa-encryption-key } }
+            {{- end }}
             - name: PORT
               value: {{ $port | quote }}
             - name: ENVIRONMENT
