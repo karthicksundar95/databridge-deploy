@@ -10,6 +10,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../databridge-client-portal/migrations/001_init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+      - ../databridge-client-portal/migrations/002_signup_otp.sql:/docker-entrypoint-initdb.d/002-signup-otp.sql:ro
+      - ../databridge-client-portal/migrations/003_admin_user_lifecycle.sql:/docker-entrypoint-initdb.d/003-admin-user-lifecycle.sql:ro
+      - ../databridge-client-portal/migrations/004_admin_password_controls.sql:/docker-entrypoint-initdb.d/004-admin-password-controls.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U databridge -d databridge"]
       interval: 5s
@@ -46,6 +49,8 @@ services:
   client-portal-service:
     build:
       context: ../databridge-client-portal
+    env_file:
+      - ../.env
     environment:
       PORT: 8081
       DATABASE_URL: postgresql+psycopg://databridge:${DATABRIDGE_DB_PASSWORD:-databridge_dev}@postgres:5432/databridge
@@ -58,6 +63,9 @@ services:
       S3_SECRET_KEY: ${DATABRIDGE_S3_SECRET_KEY:-test}
       UPLOAD_BUCKET: databridge-uploads
       DELIVERABLE_BUCKET: databridge-deliverables
+      OTP_DELIVERY: ${DATABRIDGE_OTP_DELIVERY:-resend}
+      OTP_TEST_CODE: ${DATABRIDGE_OTP_TEST_CODE:-123456}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-onboarding@resend.dev}
     ports:
       - "8081:8081"
     depends_on:
